@@ -471,6 +471,10 @@ VALID_CREATE_OPTS = {
         'path': 'HostConfig:Links',
         'default': None,
     },
+    'log_config': {
+        'path': 'HostConfig:LogConfig',
+        'default': {},
+    },
     'privileged': {
         'validator': 'bool',
         'path': 'HostConfig:Privileged',
@@ -1749,6 +1753,23 @@ def _validate_input(kwargs,
                     kwargs['labels'] = new_labels
             else:
                 kwargs['labels'] = salt.utils.repack_dictlist(kwargs['labels'])
+
+    def _valid_log_config():  # pylint: disable=unused-variable
+        '''
+        Must be a dict
+        '''
+        if kwargs.get('log_config') is None:
+            return
+        try:
+            _valid_dict('log_config')
+        except SaltInvocationError:
+            raise SaltInvocationError(
+                'log_config can only be a dict')
+        else:
+            new_log_config = {}
+            for k, v in six.iteritems(kwargs['log_config']):
+                new_log_config[str(k)] = str(v)
+            kwargs['log_config'] = new_log_config
 
     # And now, the actual logic to perform the validation
     if 'docker.docker_version' not in __context__:
